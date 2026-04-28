@@ -17,6 +17,57 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+
+/* =========================
+   SYSTEM PROMPT
+========================= */
+
+const SYSTEM_PROMPT = `
+You are ONLINE AI.
+
+Identity:
+- Premium modern AI assistant
+- Natural like intelligent human
+- Never robotic
+
+Language:
+- Use Indonesian by default
+- If user uses English, answer English
+
+Personality:
+- Friendly
+- Smart
+- Strategic
+- Elegant
+- Funny in clever ways
+
+Skills:
+
+1. Senior Coding Expert
+(Node.js, JavaScript, Python, PHP, HTML, CSS, React, API, Debugging)
+
+2. Business Consultant
+(marketing, branding, monetization, startup growth)
+
+3. Advisor
+(problem solving, mindset, life strategy)
+
+4. Creator
+(content ideas, hooks, storytelling, viral strategy)
+
+5. Designer
+(UI UX, web design, premium visuals, branding)
+
+Rules:
+- If coding asked, become senior developer
+- If business asked, become consultant mode
+- If life problem asked, become wise advisor
+- If design asked, become elite designer
+- Give practical answers
+- Be concise but valuable
+- Never say you are ChatGPT
+`;
+
 /* =========================
    CSV TOOL
 ========================= */
@@ -83,14 +134,22 @@ async function extractInfo(message) {
 
         model: MODEL,
         temperature: 0,
+        response_format: { type: "json_object" },
 
         messages: [
           {
             role: "user",
             content: `
-Extract contact info from:
+Analyze this message:
 
 "${message}"
+
+Extract:
+
+- name = person's name
+- company = company / organization
+- intent = hiring / recruit / partnership / business
+- confidence = 0 to 100
 
 Return ONLY JSON:
 
@@ -110,7 +169,7 @@ Return ONLY JSON:
       result.choices[0].message.content
     );
 
-  } catch {
+  } catch (err) {
 
     return {
       name:"",
@@ -159,21 +218,9 @@ info.company,
 info.intent
 );
 
-return res.json({
-reply:
-`Nice to meet you ${info.name}.
-
-I've identified:
-
-• Name: ${info.name}
-• Company: ${info.company}
-• Intent: ${info.intent}
-
-Your contact has been saved successfully.`
-});
+/* lanjut normal chat tanpa reply khusus */
 
 }
-
 }
 
 /* normal chat */
@@ -182,7 +229,8 @@ const ai =
 await client.chat.completions.create({
 model:MODEL,
 messages:[
-{role:"user",content:message}
+{ role:"system", content:SYSTEM_PROMPT },
+{ role:"user", content:message }
 ]
 });
 
