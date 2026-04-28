@@ -144,6 +144,11 @@ Analyze this message:
 
 "${message}"
 
+Rules:
+- If text says "from Google", company = Google
+- If text says "from Meta", company = Meta
+- If text says "from X", X = company
+
 Extract:
 
 - name = person's name
