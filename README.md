@@ -23,6 +23,7 @@ Build an AI-powered web assistant capable of:
 - OpenAI API (gpt-4o-mini)
 - HTML / CSS / JavaScript
 
+---
 
 ## Requirements
 
@@ -63,3 +64,20 @@ open
 ```
 http://localhost:3000
 ```
+
+
+---
+
+
+This is example 1 :
+
+
+
+
+This is example 2 :
+
+
+
+and my contacts.csv
+
+
