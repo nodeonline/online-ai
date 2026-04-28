@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>online.</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+
+  <div class="login-box">
+
+    <img src="agent.png" class="login-avatar">
+
+    <h1>online.</h1>
+    <p>Private Secure AI Chat</p>
+
+    <input type="text" id="username" placeholder="Enter nickname">
+
+    <button onclick="enterChat()">Enter Chat</button>
+
+  </div>
+
+</div>
+
+<!-- APP -->
+<div class="app hidden" id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="side-header">
+      <h2>Chats</h2>
+      <button class="new-btn" onclick="newChat()">＋</button>
+    </div>
+
+    <input type="text" class="search" placeholder="Search history">
+
+    <div class="chat-list" id="chatList"></div>
+
+    <div class="side-bottom">
+
+      <div class="user-box">
+        <img src="agent.png">
+        <span id="showUser">guest</span>
+      </div>
+
+      <button class="clear-btn" onclick="clearAllChats()">Clear</button>
+
+    </div>
+
+  </aside>
+
+  <!-- CHAT -->
+  <main class="chat-area">
+
+    <header class="topbar">
+
+      <div class="bot-profile">
+        <img src="agent.png">
+
+        <div>
+          <h3>online</h3>
+          <span>online is online</span>
+        </div>
+      </div>
+
+      <button class="logout-btn" onclick="logout()">Logout</button>
+
+    </header>
+
+    <section class="messages" id="messages"></section>
+
+    <footer class="input-area">
+
+      <input type="text" id="input" placeholder="Type a message...">
+
+      <button onclick="sendMessage()">Send</button>
+
+    </footer>
+
+  </main>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+node_modules
+.env
+contacts.csv
+.DS_Store
