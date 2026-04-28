@@ -71,13 +71,13 @@ http://localhost:3000
 
 This is example 1 :
 
-
-
+<img src="https://github.com/nodeonline/online-ai/blob/60c44c40e3ec5b3c4dab82442f93be9058620d4f/Example/Example%201.png" />
 
 This is example 2 :
 
-
+<img src="https://github.com/nodeonline/online-ai/blob/4cf5d098dad8535dffaafb1bb82188e4b6221d28/Example/Example%202.png" />
 
 and my contacts.csv
 
+<img src="https://github.com/nodeonline/online-ai/blob/4cf5d098dad8535dffaafb1bb82188e4b6221d28/Example/contact.csv.png" />
 
