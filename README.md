@@ -20,7 +20,7 @@ Build an AI-powered web assistant capable of:
 
 - Node.js
 - Express.js
-- OpenAI API (gpt-4o-mini)
+- OpenAI API (gpt-5.4-mini)
 - HTML / CSS / JavaScript
 
 ---
@@ -51,7 +51,7 @@ nano .env
 > change YOUR_API_KEY with your own
 ```
 OPENAI_API_KEY=YOUR_API_KEY
-MODEL=gpt-4o-mini
+MODEL=gpt-5.4-mini
 PORT=3000
 ```
 > If it has been changed, press "CTRL + X" then "Y" to exit and save the file
@@ -71,13 +71,13 @@ http://localhost:3000
 
 This is example 1 :
 
-<img src="https://github.com/nodeonline/online-ai/blob/60c44c40e3ec5b3c4dab82442f93be9058620d4f/Example/Example%201.png" />
+<img src="https://github.com/nodeonline/online-ai/blob/5351ac47c8df059a0089ae08c2d4ef1dcce0ea7f/screenshot/Example%201.png" />
 
 This is example 2 :
 
-<img src="https://github.com/nodeonline/online-ai/blob/4cf5d098dad8535dffaafb1bb82188e4b6221d28/Example/Example%202.png" />
+<img src="https://github.com/nodeonline/online-ai/blob/5351ac47c8df059a0089ae08c2d4ef1dcce0ea7f/screenshot/Example%202.png" />
 
 and my contacts.csv
 
-<img src="https://github.com/nodeonline/online-ai/blob/4cf5d098dad8535dffaafb1bb82188e4b6221d28/Example/contact.csv.png" />
+<img src="https://github.com/nodeonline/online-ai/blob/5351ac47c8df059a0089ae08c2d4ef1dcce0ea7f/screenshot/contact.csv.png" />
 
