@@ -2,261 +2,182 @@ import express from "express";
 import dotenv from "dotenv";
 import OpenAI from "openai";
 import fs from "fs";
-import { createObjectCsvWriter } from "csv-writer";
 
 dotenv.config();
 
 const app = express();
+
 app.use(express.json());
 app.use(express.static("website"));
-
-const PORT = process.env.PORT || 3000;
-const MODEL = process.env.MODEL || "gpt-4o-mini";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+// =========================
+// HELPER: SAVE CSV
+// =========================
+function saveContact(name, company, intent) {
+  const file = "contacts.csv";
 
-/* =========================
-   SYSTEM PROMPT
-========================= */
+  const row = `"${new Date().toISOString()}","${name}","${company}","${intent}"\n`;
 
-const SYSTEM_PROMPT = `
-You are ONLINE AI.
+  if (!fs.existsSync(file)) {
+    fs.writeFileSync(
+      file,
+      "timestamp,name,company,intent\n"
+    );
+  }
 
-Identity:
-- Premium modern AI assistant
-- Natural like intelligent human
-- Never robotic
+  fs.appendFileSync(file, row);
+}
 
-Language:
-- Use Indonesian by default
-- If user uses English, answer English
+// =========================
+// HELPER: DETECT CONTACT
+// =========================
+async function detectContact(message) {
+  const res = await client.chat.completions.create({
+    model: "gpt-5.4-mini",
+    messages: [
+      {
+        role: "system",
+        content: `
+Extract contact info ONLY if confident.
 
-Personality:
-- Friendly
-- Smart
-- Strategic
-- Elegant
-- Funny in clever ways
-
-Skills:
-
-1. Senior Coding Expert
-(Node.js, JavaScript, Python, PHP, HTML, CSS, React, API, Debugging)
-
-2. Business Consultant
-(marketing, branding, monetization, startup growth)
-
-3. Advisor
-(problem solving, mindset, life strategy)
-
-4. Creator
-(content ideas, hooks, storytelling, viral strategy)
-
-5. Designer
-(UI UX, web design, premium visuals, branding)
+Return JSON:
+{
+  "name": "",
+  "company": "",
+  "intent": "",
+  "valid": true/false
+}
 
 Rules:
-- If coding asked, become senior developer
-- If business asked, become consultant mode
-- If life problem asked, become wise advisor
-- If design asked, become elite designer
-- Give practical answers
-- Be concise but valuable
-- Never say you are ChatGPT
-`;
-
-/* =========================
-   CSV TOOL
-========================= */
-
-const csvWriter = createObjectCsvWriter({
-  path: "contacts.csv",
-  append: true,
-  header: [
-    { id: "name", title: "NAME" },
-    { id: "company", title: "COMPANY" },
-    { id: "intent", title: "INTENT" }
-  ]
-});
-
-async function save_contact(
-  name,
-  company,
-  intent
-) {
-  await csvWriter.writeRecords([
-    { name, company, intent }
-  ]);
-}
-
-/* =========================
-   DETECTOR
-========================= */
-
-function looksLikeIntro(text) {
-
-  const msg = text.toLowerCase();
-
-  const triggers = [
-    "i'm",
-    "i am",
-    "im ",
-    "my name is",
-    "from",
-    "recruiter",
-    "hiring",
-    "looking for",
-    "we need"
-  ];
-
-  let score = 0;
-
-  triggers.forEach(word => {
-    if (msg.includes(word)) score++;
+- valid = true ONLY if name AND company exist
+- DO NOT guess
+- If unsure → valid = false
+`
+      },
+      {
+        role: "user",
+        content: message
+      }
+    ]
   });
 
-  return score >= 2;
+  try {
+    return JSON.parse(
+      res.choices[0].message.content
+    );
+  } catch {
+    return { valid: false };
+  }
 }
 
-/* =========================
-   EXTRACTOR AI
-========================= */
-
-async function extractInfo(message) {
+// =========================
+// CHAT ENDPOINT
+// =========================
+app.post("/chat", async (req, res) => {
+  const { message, history } = req.body;
 
   try {
 
-    const result =
-      await client.chat.completions.create({
+    // =========================
+    // 1. DETECT CONTACT
+    // =========================
+    const contact = await detectContact(message);
 
-        model: MODEL,
-        temperature: 0,
-        response_format: { type: "json_object" },
+    let introContext = "";
 
-        messages: [
-          {
-            role: "user",
-            content: `
-Analyze this message:
+    if (contact.valid) {
+      saveContact(
+        contact.name,
+        contact.company,
+        contact.intent
+      );
 
-"${message}"
+      introContext = `User introduced themselves: ${contact.name} from ${contact.company}. Acknowledge this naturally using both name and company.`;
+
+      console.log("Saved contact:", contact);
+    }
+
+    // =========================
+    // 2. FORMAT HISTORY
+    // =========================
+    const messages = (history || []).map(m => ({
+      role: m.type === "user" ? "user" : "assistant",
+      content: m.text
+    }));
+
+    messages.push({
+      role: "user",
+      content: message
+    });
+
+    // 🔥 INJECTION 
+    if (introContext) {
+      messages.unshift({
+        role: "system",
+        content: introContext
+      });
+    }
+
+    // =========================
+    // 3. MAIN AI RESPONSE
+    // =========================
+    const response = await client.chat.completions.create({
+      model: "gpt-5.4-mini",
+      messages: [
+        {
+          role: "system",
+          content: `
+You are ONLINE AI.
+
+Behavior:
+- Smart, modern, professional
+- Natural human tone
+- Not robotic
+- Not too long
+- use English as default
+
+Language rules:
+- ALWAYS respond in English
+- NEVER switch to another language
+- Even if the user uses another language, still reply in English
 
 Rules:
-- If text says "from Google", company = Google
-- If text says "from Meta", company = Meta
-- If text says "from X", X = company
-
-Extract:
-
-- name = person's name
-- company = company / organization
-- intent = hiring / recruit / partnership / business
-- confidence = 0 to 100
-
-Return ONLY JSON:
-
-{
-"name":"",
-"company":"",
-"intent":"",
-"confidence":0
-}
+- DO NOT mention saving data
+- If user introduces themselves → acknowledge naturally
+- Keep response concise
+- never use  —  for chatting
+- don't go outside the rules
 `
-          }
-        ]
+        },
+        ...messages
+      ]
+    });
 
-      });
+    const reply =
+      response.choices[0].message.content;
 
-    return JSON.parse(
-      result.choices[0].message.content
-    );
+    res.json({ reply });
 
   } catch (err) {
 
-    return {
-      name:"",
-      company:"",
-      intent:"",
-      confidence:0
-    };
+    console.error(err);
+
+    res.json({
+      reply: "AI error..."
+    });
 
   }
-
-}
-
-/* =========================
-   CHAT ROUTE
-========================= */
-
-app.post("/chat", async (req,res)=>{
-
-try{
-
-const { message } = req.body;
-const msg = message.toLowerCase();
-
-/* ======================
-   HARD DETECTOR
-====================== */
-
-const introDetected =
-msg.includes("i'm") ||
-msg.includes("i am") ||
-msg.includes("from") ||
-msg.includes("we're hiring") ||
-msg.includes("hiring") ||
-msg.includes("looking for");
-
-if(introDetected){
-
-const info =
-await extractInfo(message);
-
-if(info.confidence >= 60){
-
-await save_contact(
-info.name,
-info.company,
-info.intent
-);
-
-/* lanjut normal chat tanpa reply khusus */
-
-}
-}
-
-/* normal chat */
-
-const ai =
-await client.chat.completions.create({
-model:MODEL,
-messages:[
-{ role:"system", content:SYSTEM_PROMPT },
-{ role:"user", content:message }
-]
 });
 
-return res.json({
-reply: ai.choices[0].message.content
-});
+// =========================
+// START SERVER
+// =========================
+const PORT = process.env.PORT || 3000;
 
-}catch(err){
-
-return res.json({
-reply:"Server error."
-});
-
-}
-
-});
-
-/* ========================= */
-
-app.listen(PORT, ()=>{
-  console.log(
-    "Running http://localhost:"+PORT
-  );
+app.listen(PORT, () => {
+  console.log(`Running on http://localhost:${PORT}`);
 });

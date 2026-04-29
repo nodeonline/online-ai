@@ -18,9 +18,14 @@ const searchInput = document.querySelector(".search");
    STORAGE
 ========================= */
 
+let currentUser =
+  localStorage.getItem("online_user") || "guest";
+
 let chats =
   JSON.parse(
-    localStorage.getItem("online_chats")
+    localStorage.getItem(
+      "online_chats_" + currentUser
+    )
   ) || [];
 
 let currentChatId = null;
@@ -38,6 +43,14 @@ function enterChat() {
     "online_user",
     name
   );
+
+    // 🔥 load chat khusus user ini
+  chats =
+    JSON.parse(
+      localStorage.getItem(
+        "online_chats_" + currentUser
+      )
+    ) || [];
 
   showUser.innerText = name;
 
@@ -64,6 +77,15 @@ window.onload = () => {
     );
 
   if (user) {
+
+    currentUser = user; 
+
+    chats =
+      JSON.parse(
+        localStorage.getItem(
+          "online_chats_" + currentUser
+        )
+      ) || [];
 
     showUser.innerText = user;
 
@@ -107,6 +129,7 @@ function newChat() {
   chats.unshift(chat);
 
   saveChats();
+
 
   loadChat(id);
 
@@ -164,7 +187,7 @@ function renderChats() {
 function saveChats() {
 
   localStorage.setItem(
-    "online_chats",
+    "online_chats_" + currentUser,
     JSON.stringify(chats)
   );
 
@@ -280,7 +303,7 @@ async function sendMessage() {
     typing.remove();
 
     addMessage(
-      "AI belum aktif / server error.",
+      "AI is not active / server error.",
       "bot"
     );
 
